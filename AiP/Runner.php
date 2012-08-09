@@ -1,9 +1,7 @@
 <?php
-
 namespace AiP;
 
-class Runner
-{
+class Runner extends Object {
     private $servers;
     private $cwd;
 
@@ -94,44 +92,7 @@ class Runner
         } else {
             $app = new $app_data['class'];
         }
-				
-				// changing to traditional middleware pattern as opposed to decorator
-				// pattern applied below in commented out code
-				
-				// first check to see if middleware has been defined in our yaml file
-				if (count($app_data['middlewares'])) {
-					
-					$determine_application = function($middleware, $app) {
-						if (is_array($middleware)) {
-	              $mw_class = $middleware['class'];
-	              $mw_params = array_merge(array($app), $middleware['parameters']);
-	
-	              $reflect  = new \ReflectionClass($mw_class);
-	              return $reflect->newInstanceArgs($mw_params);
-						}
-	             
-						$mw_class = 'AiP\Middleware\\'.$middleware;
-	          return new $mw_class($app);
 
-					};
-					
-					// first iterate through in config specified order and handle
-					// request context
-					foreach($app_data['middlewares'] as $middleware) {
-	          $app = $determine_application($middleware, $app);			
-					}
-					
-					
-					$app = new $app_data['class']($app);
-					
-					// now reverse middleware and handle response context
-					foreach(array_reverse($app_data['middlewares']) as $middleware) {
-						$app = $determine_application($middleware, $app);					
-					}
-					
-				}
-
-				/*
         foreach (array_reverse($app_data['middlewares']) as $middleware) {
             if (is_array($middleware)) {
                 $mw_class = $middleware['class'];
@@ -151,7 +112,6 @@ class Runner
             pcntl_signal(SIGUSR1,  SIG_DFL);
         } catch (\Exception $e) {
         }
-				*/
     }
 
 
@@ -177,6 +137,4 @@ class Runner
             posix_kill($pid, SIGUSR1);
         }
     }
-		
-		
 }
