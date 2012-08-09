@@ -39,8 +39,18 @@ abstract class Middleware extends Object {
 		}
 	}
 	
-	public function processRequest($request) { }
+	/**
+	 * Returns request parameter; this methods purpose is to serve as stub
+	 * until overriden in child class
+	 */
+	public function processRequest($request) {
+		return $request;
+	}
 	
+	/**
+	 * Returns response parameter; this methods purpose is to serve as stub
+	 * until overriden in child class
+	 */
 	public function processResponse($response) {
 		return $response;
 	}
@@ -49,8 +59,11 @@ abstract class Middleware extends Object {
 	 * Our route to invocation of middleware always flows through invoke;
 	 * its sloppy but fits into existing architecture
 	 */
-	public function __invoke($context) {
-		return $this->invokes($context);
+	public function __invoke($context) {		
+    return call_user_func(
+    	$this->app, $this->invokes($context)
+		);
+		
 	}
 
 	protected      $application;

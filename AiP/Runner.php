@@ -101,28 +101,34 @@ class Runner
 				// first check to see if middleware has been defined in our yaml file
 				if (count($app_data['middlewares'])) {
 					
-					// first iterate through in config specified order and handle
-					// request context
-					// @TODO remove copy pasta below 
-					foreach($app_data['middlewares'] as $middleware) {
-	          if (is_array($middleware)) {
+					$determine_application = function($middleware, $app) {
+						if (is_array($middleware)) {
 	              $mw_class = $middleware['class'];
 	              $mw_params = array_merge(array($app), $middleware['parameters']);
 	
 	              $reflect  = new \ReflectionClass($mw_class);
-	              $app = $reflect->newInstanceArgs($mw_params);
-	          } else {
-	              $mw_class = 'AiP\Middleware\\'.$middleware;
-	              $app = new $mw_class($app);
-	          }					
+	              return $reflect->newInstanceArgs($mw_params);
+						}
+	             
+						$mw_class = 'AiP\Middleware\\'.$middleware;
+	          return new $mw_class($app);
+
+					};
+					
+					// first iterate through in config specified order and handle
+					// request context
+					foreach($app_data['middlewares'] as $middleware) {
+	          $app = $determine_application($middleware, $app);			
 					}
 					
-	
+					
+					$app = new $app_data['class']($app);
 					
 					// now reverse middleware and handle response context
 					foreach(array_reverse($app_data['middlewares']) as $middleware) {
-						
+						$app = $determine_application($middleware, $app);					
 					}
+					
 				}
 
 				/*
@@ -171,4 +177,6 @@ class Runner
             posix_kill($pid, SIGUSR1);
         }
     }
+		
+		
 }
