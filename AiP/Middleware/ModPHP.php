@@ -15,9 +15,23 @@ class ModPHP extends AiP\Middleware {
 		// PRE-REQUEST
 		// place "superglobals" into global scope
 		foreach(ModPHP::$globals as $global) {
-			$GLOBALS[$global] = array();
-			$context[$global] = &$GLOBALS[$global];
+			
+			// if our "context" is already aware of superglobals
+			// then simply reference it
+			if (!isset($GLOBALS[$global])) {
+				if (isset($context[$global])) {
+					$GLOBALS[$global] = &$context[$global];
+				}
+				
+				// otherwise, we create array instance and reference on
+				// context
+				else {
+					$GLOBALS[$global] = [ ];
+					$context[$global] = &$GLOBALS[$global];
+				}
+			}
 		}	
+		
 		
 		// PASS TO NEXT MIDDLEWARE INSTANCE
 		$result = call_user_func($this->application, $context);
